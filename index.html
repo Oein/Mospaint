@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mospaint</title>
+    <style>
+        html, body, div, span, applet, object, iframe,
+        h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+        a, abbr, acronym, address, big, cite, code,
+        del, dfn, em, img, ins, kbd, q, s, samp,
+        small, strike, strong, sub, sup, tt, var,
+        b, u, i, center,
+        dl, dt, dd, ol, ul, li,
+        fieldset, form, label, legend,
+        table, caption, tbody, tfoot, thead, tr, th, td,
+        article, aside, canvas, details, embed, 
+        figure, figcaption, footer, header, hgroup, 
+        menu, nav, output, ruby, section, summary,
+        time, mark, audio, video {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 100%;
+            font: inherit;
+            vertical-align: baseline;
+        }
+        /* HTML5 display-role reset for older browsers */
+        article, aside, details, figcaption, figure, 
+        footer, header, hgroup, menu, nav, section {
+            display: block;
+        }
+        body {
+            line-height: 1;
+        }
+        ol, ul {
+            list-style: none;
+        }
+        blockquote, q {
+            quotes: none;
+        }
+        blockquote:before, blockquote:after,
+        q:before, q:after {
+            content: '';
+            content: none;
+        }
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+        
+        body{
+            background-color: rgb(196 , 204 , 218);
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            margin: 0;
+            height: 100%;
+        }
+        
+        canvas {
+            margin-top: 5px;
+            margin-left: 5px;
+            width: 500px;
+            height: 500px;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        
+        .control{
+            background-color: #F5F6F7;
+            padding: 50%;
+            position: fixed; 
+            top: 0; 
+            overflow:hidden; 
+            padding-right: 0; 
+            margin-right: 0;
+            padding-left: 0; 
+            margin-left: 0;
+            height: 200
+        }
+        
+        .control_color_btn{
+            width: 30px;
+            height: 30px;
+            border: 0.2vw #A0A0A0 solid;
+            outline: 0.2vw solid white;
+            outline-offset: -0.3vw;
+            margin: 1px;
+        }
+        
+        .over{
+            overflow: auto;
+            white-space:nowrap;
+            width: 100%;
+            height: 100%;
+            margin-top: 115px;
+        }
+        
+        .control_color{
+            background-color: #F5F6F7;
+            width: 100%;
+        }
+        
+        #save_import_overlay{
+            width: 50vw;
+            height: 40vh;
+            background-color: rgb(146 , 154 , 168);
+            position: fixed;
+            align-self: center;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        #close_sim{
+            background-color: red;
+            color: white;
+            border-radius: 0;
+            border: 0;
+        }
+        
+        .px{
+            padding: 0;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <table class="control" width="100%" height="110">
+        <tr height="10"></tr>
+        <tr>
+            <td width="20"></td>
+            <td width="220">
+                <table>
+                    <tr>
+                        <td>
+                            <button onclick="eraseing = false; painting = false;"><img src="이미지 경로" alt="Draw"></button>
+                        </td>
+                        <td>
+                            <button onclick="eraseing = true; painting = false;"><img src="이미지 경로" alt="Erase"></button>
+                        </td>
+                        <td>
+                            <button onclick="clearAll()"><img src="이미지 경로" alt="ClearAll"></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button onclick="undo()"><img src="이미지 경로" alt="Undo"></button>
+                        </td>
+                        <td>
+                            <button onclick="redo()"><img src="이미지 경로" alt="Redo"></button>
+                        </td>
+                        <td>
+                            <button onclick="show_sim()"><img src="이미지 경로" alt="Save"></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <button onclick="paintAll()"><img src="이미지 경로" alt="PaintAll"></button>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                    </tr>
+                </table>
+            </td> <!-- Tools  -->
+            <td>
+                <table><tr></tr></table>
+                <select id="tAt" onchange="ChangeTaT()">
+                    <option value="0.1">Thin</option>
+                    <option value="2">Little Thin</option>
+                    <option value="4" selected>Middle</option>
+                    <option value="6">Little Thick</option>
+                    <option value="10">Thick</option>
+                </select>
+            </td>
+            <td width="45" height="70" style="align-items: center">
+                <table height="70px" style="padding-top: 10px">
+                    <tr height="40px">
+                        <td>
+                            <input style="width: 40px; height: 40px; border:0px;" type="color" id="color" width="40px" height="40px" style="width: 40px; height: 40px;" value="#000000" onchange="cc(this.value)">
+                        </td>
+                    </tr>
+                    <tr width="40px" style="text-align: center">
+                        <td>
+                             <h3>Color</h3>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <table>
+                    <tr>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #000000" onclick="cc('#000000');"></button>
+                        </td>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #7F7F7F" onclick="cc('#7F7F7F');"></button>
+                        </td>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #7C161B" onclick="cc('#7C161B');"></button>
+                        </td>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #DA3832" onclick="cc('#DA3832');"></button>
+                        </td>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #EF8640" onclick="cc('#EF8640');"></button>
+                        </td>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #FDF251" onclick="cc('#FDF251');"></button>
+                        </td>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #55AE59" onclick="cc('#55AE59');"></button>
+                        </td>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #489FE2" onclick="cc('#489FE2');"></button>
+                        </td>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #4148C4" onclick="cc('#4148C4');"></button>
+                        </td>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #984E9F" onclick="cc('#984E9F');"></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #FFFFFF" onclick="cc('#FFFFFF');"></button>
+                        </td>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #C3C3C3" onclick="cc('#C3C3C3');"></button>
+                        </td>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #B07D5E" onclick="cc('#B07D5E');"></button>
+                        </td>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #F3B1C8" onclick="cc('#F3B1C8');"></button>
+                        </td>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #F7CB47" onclick="cc('#F7CB47');"></button>
+                        </td>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #EDE4B7" onclick="cc('#EDE4B7');"></button>
+                        </td>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #BFE44F" onclick="cc('#BFE44F');"></button>
+                        </td>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #A7D7E8" onclick="cc('#A7D7E8');"></button>
+                        </td>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #7791BB" onclick="cc('#7791BB');"></button>
+                        </td>
+                        <td>
+                            <button class="control_color_btn" style="background-color: #C6BFE4" onclick="cc('#C6BFE4');"></button>
+                        </td>
+                    </tr>
+                </table>
+            </td> <!-- Colors -->
+        </tr>
+    </table>
+    
+    <div class="over">
+        <canvas id="jsCanvas" />
+    </div>
+    
+    <div valign="bottom" style="width: 100vw; height: 4vh; background-color: #F5F6F7;position: fixed; bottom: 0px; overflow:hidden; padding: 0; margin-top: 2vh;">
+    <table>
+        <tr>
+            <td width="15px"></td>
+            
+            <td height="1.5vh">
+                <div><input class="px" type="number" id="xpx" value="500" onchange="changeSize()" onkeyup="changeSize()"> X <input type="number" id="ypx" onkeyup="changeSize()" class="px" value="500" onchange="changeSize()">px</div>
+            </td>
+            
+            <td width="100vw"></td>
+        </tr>    
+    </table>
+    </div>
+    
+    <div id="save_import_overlay">
+        <table width="100%">
+            <tr class="control_color sim" width="100%">
+                <td width="99%">
+                    Save / Import
+                </td>
+                <td>
+                    <button id="close_sim" onclick="close_sim();">X</button>
+                </td>
+            </tr>
+            <tr height="25"></tr>
+        </table>
+        <table width="100%">
+            <tr>
+                <td width="20"></td>
+                <td width="30vw">
+                    <input width="300" style="width: 30vw;" id="FileName" type="name" placeholder="File Name" value=""></input>
+                </td>
+                <td width="70">
+                    <select id="FileBack">
+                        <option value="png">.png</option>
+                        <option value="jpeg">.jpeg</option>
+                    </select>
+                </td>
+                <td>
+                    <button onclick="save()">
+                    Save</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    <script>
+        let canvas = document.getElementById("jsCanvas");
+        let ctx = canvas.getContext("2d");
+        let eraseing = false;
+        
+        let currentPath = new Path2D();
+        let pathObjArr = [];
+        let cancelPaths = [];
+        
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0 , 0 , canvas.offsetWidth , canvas.offsetHeight);
+        
+        ctx.strokeStyle = "#000000";
+        ctx.fillStyle = "#000000";
+        
+        ctx.lineWidth = 2.5;
+        
+        let painting = false;
+        document.getElementById("save_import_overlay").style.display = "none"
+        
+        Array.prototype.random = function () {
+          return this[Math.floor((Math.random()*this.length))];
+        }
+        
+        function close_sim(){
+            document.getElementById("save_import_overlay").style.display = "none"
+        }
+        
+        function ChangeTaT(){
+            ctx.lineWidth = Number(document.getElementById("tAt").value) * (canvas.offsetWidth > canvas.offsetHeight ? canvas.offsetWidth : canvas.offsetHeight) / 500;
+        }
+        
+        function show_sim(){
+            document.getElementById("save_import_overlay").style.display = "block"
+            document.getElementById("FileName").value = ["An awesome picture" , "Super amazing picture" , "Fantastic picture" , "My great picture" , "My perfect Image" , "A picture" , "An image" , "An image created on " + new Date()].random()
+        }
+        
+        function clearAll(){
+            pathObjArr = [];
+            cancelPaths = [];
+            let c = ctx.fillStyle;
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(0 , 0 , canvas.offsetWidth , canvas.offsetHeight);
+            ctx.fillStyle = c;
+        }
+        
+        function eraseLine(x, y) {
+            let count = 0;
+
+            pathObjArr.forEach(pathObj => {
+                if(ctx.isPointInStroke(pathObj.path, x, y)) {
+                    cancelPaths.push(pathObj);
+                    pathObj.visible = false;
+                    
+                    ++count;
+                }
+            });
+
+            if (count > 0) {
+                let c = ctx.fillStyle;
+                ctx.fillStyle = "#FFFFFF";
+                ctx.fillRect(0 , 0 , canvas.offsetWidth , canvas.offsetHeight);
+                ctx.fillStyle = c;
+                
+                const currentStrokeStyle = ctx.strokeStyle;
+                const currentLineWidth = ctx.lineWidth;
+                for(let i = 0;i < pathObjArr.length;i++){
+                    let pathObj = pathObjArr[i];
+                    if(pathObj.visible === true) {
+                        ctx.strokeStyle = pathObj.color;
+                        ctx.lineWidth = pathObj.width;
+                        ctx.stroke(pathObj.path);
+                    }
+                }
+                ctx.strokeStyle = currentStrokeStyle;
+                ctx.lineWidth = currentLineWidth;
+            }
+        }
+        
+        
+        function changeSize(){
+            var oldCanvas = canvas.toDataURL("image/png");
+            var img = new Image();
+            img.src = oldCanvas;
+            
+            let wd = document.getElementById("xpx").value;
+            let hd = document.getElementById("ypx").value;
+            canvas.style.width = wd.toString() + "px";
+            canvas.style.height = hd.toString() + "px";
+            canvas.width = wd;
+            canvas.height = hd;
+            
+            img.onload = function (){
+              ctx.drawImage(img, 0, 0 , wd , hd);
+            };
+        }
+        
+        function storeCurrentPath(){
+            if(eraseing == true) return;
+            const newPathObj = {
+                path: currentPath,
+                visible: true,
+                color: ctx.strokeStyle,
+                width: ctx.lineWidth
+            };
+            pathObjArr.push(newPathObj);
+        }
+        
+        function save(){
+            let image = canvas.toDataURL("image/" + document.getElementById("FileBack").value);
+            let link = document.createElement("a");
+            link.href = image;
+            link.download = document.getElementById("FileName").value;
+            link.click();
+        }
+        
+        function paintAll(){
+            ctx.fillRect(0 , 0 , canvas.offsetWidth , canvas.offsetHeight);
+        }
+        
+        function cc(c){
+            ctx.strokeStyle = c;
+            ctx.fillStyle = c;
+            document.getElementById("color").value = c;
+        }
+        
+        function stopPainting(){
+            if(painting){
+                storeCurrentPath();
+                currentPath = new Path2D();
+            }
+            
+            painting = false;
+        }
+        
+        function startPainting(){
+            painting = true;
+        }
+        
+        function mouseMoveHandler(event){
+            let x = event.layerX;
+            let y = event.layerY;
+            if(!painting){
+                ctx.beginPath();
+                ctx.moveTo(x , y); 
+            } else {
+                if (eraseing){
+                    eraseLine(x , y);
+                }else{
+                    currentPath.lineTo(x , y);
+                    ctx.stroke(currentPath);
+                }
+            }
+        }
+        
+        function mouseDownHandler(event){
+            startPainting();
+        }
+        
+        function mouseUpHandler(event){
+            stopPainting();
+        }
+        
+        function mouseLeaveHandler(event){
+            stopPainting(); 
+        }
+        
+        function undo(){
+            if(pathObjArr.length == 0) return;
+                cancelPaths.push(pathObjArr.pop());
+                cancelPaths[cancelPaths.length - 1].visible = false;
+                let c = ctx.fillStyle;
+                ctx.fillStyle = "#FFFFFF";
+                ctx.fillRect(0 , 0 , canvas.offsetWidth , canvas.offsetHeight);
+                ctx.fillStyle = c;
+                
+                const currentStrokeStyle = ctx.strokeStyle;
+                const currentLineWidth = ctx.lineWidth;
+                for(let i = 0;i < pathObjArr.length;i++){
+                    let pathObj = pathObjArr[i];
+                    if(pathObj == undefined){
+                        continue;
+                    }
+                    if(pathObj.visible === true) {
+                        ctx.strokeStyle = pathObj.color;
+                        ctx.lineWidth = pathObj.width;
+                        ctx.stroke(pathObj.path);
+                    }
+                }
+                ctx.strokeStyle = currentStrokeStyle;
+                ctx.lineWidth = currentLineWidth;
+        }
+        
+        function redo(){
+            if(cancelPaths.length == 0) return;
+                pathObjArr.push(cancelPaths.pop());
+                pathObjArr[pathObjArr.length - 1].visible = true;
+                
+                let c = ctx.fillStyle;
+                ctx.fillStyle = "#FFFFFF";
+                ctx.fillRect(0 , 0 , canvas.offsetWidth , canvas.offsetHeight);
+                ctx.fillStyle = c;
+                
+                const currentStrokeStyle = ctx.strokeStyle;
+                const currentLineWidth = ctx.lineWidth;
+                for(let i = 0;i < pathObjArr.length;i++){
+                    let pathObj = pathObjArr[i];
+                    if(pathObj == undefined){
+                        continue;
+                    }
+                    if(pathObj.visible === true) {
+                        ctx.strokeStyle = pathObj.color;
+                        ctx.lineWidth = pathObj.width;
+                        ctx.stroke(pathObj.path);
+                    }
+                }
+                ctx.strokeStyle = currentStrokeStyle;
+                ctx.lineWidth = currentLineWidth;
+        }
+        
+        function kevent(event){
+            console.log(event);
+            if(event.code == 'KeyS' && event.ctrlKey){
+                console.log("S");
+                show_sim();
+            }
+            if(event.code == 'KeyZ' && event.ctrlKey){
+                console.log("Z");
+                undo();
+            }
+            if(event.code == 'KeyY' && event.ctrlKey){
+                console.log("Y");
+                redo();
+            }
+        }
+        
+        if(canvas){
+            canvas.addEventListener("mousemove" , mouseMoveHandler);
+            canvas.addEventListener("mousedown" , mouseDownHandler);
+            canvas.addEventListener("mouseup" , mouseUpHandler);
+            canvas.addEventListener("mouseleave" , mouseLeaveHandler);
+            document.body.addEventListener("keyup" , kevent);
+        }
+    </script>
+</body>
+</html>
